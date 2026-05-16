@@ -160,34 +160,89 @@
             gap: 0.5rem 1rem;
         }
 
-        .innovator-badge {
+        .animated-badge {
             display: inline-flex;
             align-items: center;
-            background-color: #FFF1F2;
-            border: 1px solid #FFE4E6;
+            background-color: var(--badge-bg);
+            border: 1px solid var(--badge-border);
             padding: 0.25rem 1.75rem;
             border-radius: 9999px;
-            box-shadow: 0 4px 14px rgba(225, 29, 72, 0.15);
-            gap: 0.75rem;
+            box-shadow: 0 4px 14px var(--badge-shadow);
             transform: rotate(-2deg);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: background-color 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease, transform 0.3s ease;
+            justify-content: center;
         }
 
-        .innovator-badge:hover {
+        .animated-badge:hover {
             transform: translateY(-2px) rotate(0deg);
-            box-shadow: 0 6px 20px rgba(225, 29, 72, 0.2);
+            box-shadow: 0 6px 20px var(--badge-shadow-hover);
         }
 
-        .crown-icon {
-            color: #E11D48;
+        .badge-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .innovator-text {
+        .badge-content.slide-out-up {
+            opacity: 0;
+            transform: translateY(-15px);
+        }
+
+        .badge-content.slide-in-down {
+            opacity: 0;
+            transform: translateY(15px);
+            transition: none;
+        }
+
+        .badge-icon {
+            color: var(--badge-color);
+            transition: color 0.5s ease;
+            width: 0.8em;
+            height: 0.8em;
+        }
+
+        .badge-text {
             font-family: 'Playfair Display', serif;
             font-style: italic;
             font-weight: 600;
-            color: #E11D48;
+            color: var(--badge-color);
             padding-bottom: 0.25rem;
+            transition: color 0.5s ease;
+        }
+
+        /* Badge Themes */
+        .theme-innovator {
+            --badge-bg: #FFF1F2;
+            --badge-border: #FFE4E6;
+            --badge-shadow: rgba(225, 29, 72, 0.15);
+            --badge-shadow-hover: rgba(225, 29, 72, 0.2);
+            --badge-color: #E11D48;
+        }
+
+        .theme-creator {
+            --badge-bg: #EFF6FF;
+            --badge-border: #DBEAFE;
+            --badge-shadow: rgba(37, 99, 235, 0.15);
+            --badge-shadow-hover: rgba(37, 99, 235, 0.2);
+            --badge-color: #2563EB;
+        }
+
+        .theme-professional {
+            --badge-bg: #FFF7ED;
+            --badge-border: #FFEDD5;
+            --badge-shadow: rgba(234, 88, 12, 0.15);
+            --badge-shadow-hover: rgba(234, 88, 12, 0.2);
+            --badge-color: #EA580C;
+        }
+
+        .theme-expert {
+            --badge-bg: #F0FDF4;
+            --badge-border: #DCFCE7;
+            --badge-shadow: rgba(22, 163, 74, 0.15);
+            --badge-shadow-hover: rgba(22, 163, 74, 0.2);
+            --badge-color: #16A34A;
         }
 
         .sub-headline {
@@ -259,6 +314,152 @@
             transform: translateX(4px);
         }
 
+        /* Templates Section */
+        .templates-section {
+            padding-top: 6rem;
+            width: 100%;
+            background-color: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+
+        .templates-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 4rem auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 20;
+        }
+
+        .templates-header h2 {
+            font-size: 3rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 1.2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .templates-header p {
+            font-size: 1.125rem;
+            color: #4B5563;
+            line-height: 1.6;
+        }
+
+        /* Scroll Animation Container */
+        .scroll-wrapper {
+            height: 250vh; 
+            position: relative;
+            width: 100%;
+        }
+
+        .sticky-container {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 1rem;
+            width: 90vw;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            transform-origin: center center;
+            transform: scale(3.5); 
+            will-change: transform;
+        }
+
+        .grid-item {
+            background-color: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .placeholder-content {
+            display: none;
+        }
+
+        .placeholder-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+        
+        .placeholder-content p {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+
+        /* Specific styling for images */
+        .item-1 { background: url('b11.png') center/cover; }
+        .item-2 { background: url('b12.png') center/cover; }
+        .item-3 { background: url('b13.png') center/cover; }
+        .item-4 { background: url('b14.png') center/cover; }
+        .item-6 { background: url('b16.png') center/cover; }
+        .item-7 { background: url('b17.png') center/cover; }
+        .item-8 { background: url('b18.png') center/cover; }
+        .item-9 { background: url('b19.png') center/cover; }
+
+        /* Creative Studio (Center Item) */
+        .item-creative-studio {
+            background: url('b15.png') center/cover;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .creative-content {
+            display: none;
+        }
+
+        .creative-content h2 {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            text-align: center;
+        }
+
+        /* Responsive Design updates for Grid */
+        @media (max-width: 1024px) {
+            .grid-container {
+                gap: 0.75rem;
+            }
+            .creative-content h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .templates-header h2 {
+                font-size: 2.25rem;
+            }
+            .grid-container {
+                transform: scale(2.5);
+                gap: 0.5rem;
+            }
+            .creative-content h2 {
+                font-size: 1.2rem;
+            }
+            .placeholder-content h3 {
+                font-size: 1.2rem;
+            }
+        }
+
         /* Animations */
         @keyframes fadeInUp {
             from {
@@ -324,11 +525,13 @@
             <span style="flex-basis: 100%;">Show up</span>
             <span style="display: flex; align-items: center; gap: 0.5rem;">
                 like an 
-                <span class="innovator-badge">
-                    <svg class="crown-icon" width="0.8em" height="0.8em" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.5 18.5L3.5 5L8.5 10.5L12 3.5L15.5 10.5L20.5 5L21.5 18.5H2.5ZM3.5 20.5H20.5V22H3.5V20.5Z" />
-                    </svg>
-                    <span class="innovator-text">Innovator</span>
+                <span id="role-badge" class="animated-badge theme-innovator">
+                    <span id="badge-content" class="badge-content">
+                        <svg id="badge-icon" class="badge-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2.5 18.5L3.5 5L8.5 10.5L12 3.5L15.5 10.5L20.5 5L21.5 18.5H2.5ZM3.5 20.5H20.5V22H3.5V20.5Z" />
+                        </svg>
+                        <span id="badge-text" class="badge-text">Innovator</span>
+                    </span>
                 </span>
             </span>
         </h1>
@@ -343,5 +546,155 @@
             </a>
         </div>
     </main>
+
+    <section id="templates" class="templates-section">
+        <div class="templates-header">
+            <h2>Turn any template into your own</h2>
+            <p>Browse ready-made designs and customize them easily — or get smart guidance to shape your content and layout.</p>
+        </div>
+        
+        <div class="scroll-wrapper" id="scroll-wrapper">
+            <div class="sticky-container">
+                <div class="grid-container" id="grid-container">
+                    <!-- 9 Grid Items -->
+                    <div class="grid-item item-1">
+                        <div class="placeholder-content">
+                            <h3>Dance Fitness</h3>
+                            <p>Feel the energy</p>
+                        </div>
+                    </div>
+                    <div class="grid-item item-2">
+                        <div class="placeholder-content">
+                            <h3>Restore Your Natural Mobility</h3>
+                            <p>Premium rehabilitation center</p>
+                        </div>
+                    </div>
+                    <div class="grid-item item-3">
+                        <div class="placeholder-content">
+                            <h3>Train Like a Pro.</h3>
+                            <p>Play like a champion.</p>
+                        </div>
+                    </div>
+                    <div class="grid-item item-4">
+                        <div class="placeholder-content">
+                            <h3>Dr. Ananya Sharma</h3>
+                            <p>Expert medical care, centered around your family.</p>
+                        </div>
+                    </div>
+                    <div class="grid-item item-creative-studio">
+                        <div class="creative-content">
+                            <h2>C R E A T I V E &nbsp; S T U D I O</h2>
+                        </div>
+                    </div>
+                    <div class="grid-item item-6">
+                        <div class="placeholder-content">
+                            <h3>Speak with Impact.</h3>
+                            <p>Lead the room.</p>
+                        </div>
+                    </div>
+                    <div class="grid-item item-7">
+                        <div class="placeholder-content">
+                            <h3>SparkKids</h3>
+                            <p>Ignite Their Inner Artist</p>
+                        </div>
+                    </div>
+                    <div class="grid-item item-8">
+                        <div class="placeholder-content">
+                            <h3>CampSizzle</h3>
+                            <p>Master Cooking This Summer!</p>
+                        </div>
+                    </div>
+                    <div class="grid-item item-9">
+                        <div class="placeholder-content">
+                            <h3>Summer Camp</h3>
+                            <p>Where Every Child Finds a New Hobby!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const roles = [
+                {
+                    text: 'Innovator',
+                    theme: 'theme-innovator',
+                    icon: 'M2.5 18.5L3.5 5L8.5 10.5L12 3.5L15.5 10.5L20.5 5L21.5 18.5H2.5ZM3.5 20.5H20.5V22H3.5V20.5Z'
+                },
+                {
+                    text: 'Creator',
+                    theme: 'theme-creator',
+                    icon: 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'
+                },
+                {
+                    text: 'Professional',
+                    theme: 'theme-professional',
+                    icon: 'M12 2L13.2 9.6L20 12L13.2 14.4L12 22L10.8 14.4L4 12L10.8 9.6L12 2Z'
+                },
+                {
+                    text: 'Expert',
+                    theme: 'theme-expert',
+                    icon: 'M12 2L22 12L12 22L2 12L12 2Z'
+                }
+            ];
+
+            let currentRoleIndex = 0;
+            const badge = document.getElementById('role-badge');
+            const content = document.getElementById('badge-content');
+            const iconPath = document.querySelector('#badge-icon path');
+            const textElement = document.getElementById('badge-text');
+
+            setInterval(() => {
+                content.classList.add('slide-out-up');
+                
+                setTimeout(() => {
+                    content.classList.remove('slide-out-up');
+                    content.classList.add('slide-in-down');
+                    
+                    currentRoleIndex = (currentRoleIndex + 1) % roles.length;
+                    const nextRole = roles[currentRoleIndex];
+
+                    badge.className = `animated-badge ${nextRole.theme}`;
+                    iconPath.setAttribute('d', nextRole.icon);
+                    textElement.textContent = nextRole.text;
+
+                    void content.offsetWidth;
+                    
+                    content.classList.remove('slide-in-down');
+                }, 400);
+            }, 3000);
+
+            // Scroll Animation for Templates Grid
+            const scrollWrapper = document.getElementById('scroll-wrapper');
+            const gridContainer = document.getElementById('grid-container');
+
+            if (scrollWrapper && gridContainer) {
+                window.addEventListener('scroll', () => {
+                    const rect = scrollWrapper.getBoundingClientRect();
+                    const scrollableDistance = rect.height - window.innerHeight;
+                    
+                    // Prevent calculation errors if elements are hidden
+                    if (scrollableDistance <= 0) return;
+                    
+                    let progress = -rect.top / scrollableDistance;
+                    progress = Math.max(0, Math.min(1, progress));
+                    
+                    // Check if mobile for startScale
+                    const isMobile = window.innerWidth <= 768;
+                    const startScale = isMobile ? 2.5 : 3.5;
+                    const endScale = 1;
+                    
+                    const currentScale = startScale - (progress * (startScale - endScale));
+                    
+                    gridContainer.style.transform = `scale(${currentScale})`;
+                });
+                
+                // Trigger once to set initial state correctly
+                window.dispatchEvent(new Event('scroll'));
+            }
+        });
+    </script>
 </body>
 </html>
