@@ -615,6 +615,23 @@
         </div>
     </section>
 
+    <section class="templates-section" style="padding-top: 4rem; padding-bottom: 8rem;">
+        <div class="templates-header animate-fade-in-up">
+            <h2>Your growth deserves the right foundation.</h2>
+            <p>Create a website that supports, showcases, and scales your business.</p>
+        </div>
+
+        <div class="animate-fade-in-up" style="animation-delay: 200ms; width: 100%; margin-top: 3rem;">
+            <div class="player fallback" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background-color: transparent; width: 100%; margin: 0;">
+                <iframe title="vimeo-player" src="https://player.vimeo.com/video/1165275255?h=8863e094f0&background=1&autoplay=1&muted=1&loop=1&byline=0&title=0&controls=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+            </div>
+        </div>
+        <div class="templates-header animate-fade-in-up" style="margin-top: 5rem;">
+            <h2>The simplest way to launch your presence.</h2>
+            <p>Each step is carefully designed to be simple, guided, and easy to follow.</p>
+        </div>
+    </section>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const roles = [
