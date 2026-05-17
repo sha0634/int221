@@ -161,6 +161,19 @@
                 </div>
             </div>
 
+            <!-- Dynamic Niche Keywords Management -->
+            <div style="margin-top: 3rem; border-top: 1px solid #E2E8F0; padding-top: 2rem;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;">Domain & Niche Keywords</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Enter comma-separated keywords (e.g. <code>minimalist, wellness, boutique, branding, frontend</code>) that help clients discover your specific domain and profile.</p>
+                <form action="{{ route('creator.portfolio.keywords') }}" method="POST">
+                    @csrf
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <input type="text" name="keywords" value="{{ is_array($portfolio->keywords) ? implode(', ', $portfolio->keywords) : '' }}" placeholder="e.g. minimalist, architect, luxury, modern, design" required style="background: white; padding: 0.85rem 1.25rem; border-radius: 10px; flex: 1; color: var(--text-dark); border: 1.5px solid #E2E8F0; font-size: 0.95rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='#E2E8F0'" />
+                        <button type="submit" style="padding: 0.85rem 1.5rem; background: var(--accent); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: background 0.2s;">Save Keywords</button>
+                    </div>
+                </form>
+            </div>
+
             <!-- Dynamic Template Gallery Switcher -->
             <div style="margin-top: 3.5rem; border-top: 1px solid #E2E8F0; padding-top: 2.5rem;">
                 <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">Switch Design Style / Template</h3>

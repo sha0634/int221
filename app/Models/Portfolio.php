@@ -19,6 +19,7 @@ class Portfolio extends Model
         'avatar',
         'banner',
         'skills',
+        'keywords',
         'projects',
         'social_links',
         'slug',
@@ -27,6 +28,7 @@ class Portfolio extends Model
 
     protected $casts = [
         'skills' => 'array',
+        'keywords' => 'array',
         'projects' => 'array',
         'social_links' => 'array',
         'is_live' => 'boolean',

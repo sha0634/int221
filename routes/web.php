@@ -78,7 +78,62 @@ Route::middleware('auth')->group(function () {
                 'projectsCount'
             ));
         } elseif ($role === 'client') {
-            return view('dashboard-client');
+            $email = auth()->user()->email;
+            
+            // 1. Fetch inquiries sent by this client
+            $inquiries = \App\Models\Inquiry::where('client_email', $email)
+                ->with('portfolio')
+                ->latest()
+                ->get();
+                
+            // 2. Calculate dynamic stats
+            $totalInquiries = $inquiries->count();
+            
+            // Unique creators contacted (portfolios)
+            $contactedPortfolioIds = $inquiries->pluck('portfolio_id')->unique();
+            $creatorsCount = $contactedPortfolioIds->count();
+            
+            // Portfolios/creators contacted
+            $creators = \App\Models\Portfolio::whereIn('id', $contactedPortfolioIds)
+                ->with('user')
+                ->get();
+                
+            // Replies received count (inquiries with replied status)
+            $repliesCount = $inquiries->where('status', 'replied')->count();
+            
+            // 3. Discover Portfolios: All live portfolios
+            $discoverPortfolios = \App\Models\Portfolio::where('is_live', true)
+                ->latest()
+                ->take(6)
+                ->get();
+                
+            $allPortfolios = \App\Models\Portfolio::where('is_live', true)
+                ->with('user')
+                ->latest()
+                ->get();
+
+            // 4. Fetch Contracts & Invoices (Billing) for this client
+            $contracts = \App\Models\Contract::where('client_email', $email)
+                ->with('portfolio')
+                ->latest()
+                ->get();
+                
+            $invoices = \App\Models\Invoice::where('client_email', $email)
+                ->with(['portfolio', 'contract'])
+                ->latest()
+                ->get();
+
+            return view('dashboard-client', compact(
+                'inquiries',
+                'totalInquiries',
+                'creatorsCount',
+                'creators',
+                'repliesCount',
+                'discoverPortfolios',
+                'allPortfolios',
+                'contracts',
+                'invoices'
+            ));
         } elseif ($role === 'admin') {
             return view('dashboard-admin');
         }
@@ -118,6 +173,86 @@ Route::middleware('auth')->group(function () {
 
     // Analytics Management
     Route::get('/creator/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('creator.analytics');
+
+    // Client Inquiries Management
+    Route::post('/client/inquiries/{inquiry}/reply', function (\Illuminate\Http\Request $request, $id) {
+        $inquiry = \App\Models\Inquiry::findOrFail($id);
+        
+        // Ensure the logged-in client is the owner of this inquiry
+        if ($inquiry->client_email !== auth()->user()->email) {
+            abort(403);
+        }
+        
+        $request->validate([
+            'message' => 'required|string',
+        ]);
+        
+        $replies = $inquiry->replies ?? [];
+        $replies[] = [
+            'sender' => 'client',
+            'message' => $request->message,
+            'created_at' => now()->toIso8601String(),
+        ];
+        
+        $inquiry->update([
+            'replies' => $replies,
+            'status' => 'new', // Reset status so the creator knows they have a new message
+        ]);
+        
+        return back()->with('success', 'Your follow-up reply was submitted successfully!');
+    })->name('client.inquiries.reply');
+
+    // Client Contracts signing
+    Route::post('/client/contracts/{contract}/sign', function ($id) {
+        $contract = \App\Models\Contract::findOrFail($id);
+        if ($contract->client_email !== auth()->user()->email) {
+            abort(403);
+        }
+        
+        $contract->update([
+            'status' => 'active',
+            'signed_at' => now(),
+        ]);
+        
+        return back()->with('success', 'Contract "' . $contract->title . '" has been signed successfully!');
+    })->name('client.contracts.sign');
+
+    // Client Invoice payment
+    Route::post('/client/invoices/{invoice}/pay', function ($id) {
+        $invoice = \App\Models\Invoice::findOrFail($id);
+        if ($invoice->client_email !== auth()->user()->email) {
+            abort(403);
+        }
+        
+        $invoice->update([
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+        
+        return back()->with('success', 'Invoice "' . $invoice->title . '" has been paid successfully!');
+    })->name('client.invoices.pay');
+
+    // Creator keywords update
+    Route::post('/creator/portfolio/keywords', function (\Illuminate\Http\Request $request) {
+        $portfolio = auth()->user()->portfolio;
+        if (!$portfolio) {
+            return back()->with('error', 'Create a portfolio first!');
+        }
+        
+        $request->validate([
+            'keywords' => 'required|string',
+        ]);
+        
+        // Split by comma
+        $keywords = array_map('trim', explode(',', $request->keywords));
+        $keywords = array_filter($keywords); // Remove empty items
+        
+        $portfolio->update([
+            'keywords' => array_values($keywords)
+        ]);
+        
+        return back()->with('success', 'Portfolio keywords updated successfully!');
+    })->name('creator.portfolio.keywords');
 });
 
 // Public Portfolio View
