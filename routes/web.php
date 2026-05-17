@@ -22,6 +22,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        $role = auth()->user()->role;
+        
+        if ($role === 'creator') {
+            return view('dashboard-creator');
+        } elseif ($role === 'client') {
+            return view('dashboard-client');
+        } elseif ($role === 'admin') {
+            return view('dashboard-admin');
+        }
+        
+        // Fallback
+        return view('dashboard-creator');
     })->name('dashboard');
 });
