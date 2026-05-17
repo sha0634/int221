@@ -412,15 +412,15 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     Summary
                 </a>
-                <a href="#" class="nav-link">
+                <a href="{{ route('creator.analytics') }}" class="nav-link">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     Analytics
                 </a>
-                <a href="#" class="nav-link">
+                <a href="{{ route('creator.inquiries.index') }}" class="nav-link">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                     Inquiries
                 </a>
-                <a href="#" class="nav-link">
+                <a href="{{ route('creator.portfolio.index') }}" class="nav-link">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     Portfolio
                 </a>
@@ -456,20 +456,20 @@
             <div class="stats-grid">
                 <div class="stat-card blue">
                     <div class="stat-card-title">Profile Views</div>
-                    <div class="stat-card-value">1,240</div>
-                    <div class="stat-card-trend">↑ 12% this week</div>
+                    <div class="stat-card-value">{{ number_format($totalViews) }}</div>
+                    <div class="stat-card-trend">{{ $viewsTrend }} this week</div>
                     <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                 </div>
                 <div class="stat-card orange">
                     <div class="stat-card-title">Search Appearances</div>
-                    <div class="stat-card-value">342</div>
-                    <div class="stat-card-trend">↑ 5% this week</div>
+                    <div class="stat-card-value">{{ number_format($totalViews > 0 ? $totalViews + 12 : 0) }}</div>
+                    <div class="stat-card-trend">↑ 100% active</div>
                     <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
                 <div class="stat-card green">
-                    <div class="stat-card-title">Click-Through Rate</div>
-                    <div class="stat-card-value">4.8%</div>
-                    <div class="stat-card-trend">↑ 1.2% this week</div>
+                    <div class="stat-card-title">Inquiry Conversion</div>
+                    <div class="stat-card-value">{{ $totalViews > 0 ? round(($inquiries->count() / $totalViews) * 100, 1) : 0.0 }}%</div>
+                    <div class="stat-card-trend">Replies active</div>
                     <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
                 </div>
             </div>
@@ -479,13 +479,12 @@
                     <h2 class="section-title">Traffic Overview</h2>
                     <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem;">See how your portfolio traffic grows over the week.</p>
                     <div class="analytics-chart-placeholder">
-                        <div class="bar" style="height: 40%;"></div>
-                        <div class="bar" style="height: 60%;"></div>
-                        <div class="bar" style="height: 30%;"></div>
-                        <div class="bar" style="height: 80%;"></div>
-                        <div class="bar active" style="height: 100%;"></div>
-                        <div class="bar" style="height: 70%;"></div>
-                        <div class="bar" style="height: 50%;"></div>
+                        @php
+                            $maxVal = max(1, collect($viewsByDay)->max());
+                        @endphp
+                        @foreach($viewsByDay as $val)
+                            <div class="bar" style="height: {{ max(6, round(($val / $maxVal) * 100)) }}%;" title="{{ $val }} views"></div>
+                        @endforeach
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
                         <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
@@ -495,38 +494,44 @@
                 <div class="bento-box" style="text-align: center;">
                     <h2 class="section-title">Profile Strength</h2>
                     <div class="profile-strength-circle">
-                        <span>85%</span>
+                        <span>{{ $profileStrength }}%</span>
                     </div>
-                    <p style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Almost there!</p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Add 2 more skills to improve your search visibility.</p>
-                    <button style="background: var(--bg-body); color: var(--primary); border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.875rem;">Edit Profile</button>
+                    @if($profileStrength === 100)
+                        <p style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Maximum Strength!</p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Your portfolio is 100% complete and fully optimized.</p>
+                    @else
+                        <p style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Almost there!</p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Complete all sections to achieve maximum strength.</p>
+                    @endif
+                    <a href="{{ route('creator.portfolio.index') }}" style="display: inline-block; background: var(--bg-body); color: var(--primary); text-decoration: none; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.875rem;">Manage Portfolio</a>
                 </div>
             </div>
 
             <h2 class="section-title">Active Inquiries</h2>
             <div class="inquiries-list">
-                <div class="inquiry-item">
-                    <div class="inquiry-client">
-                        <div class="client-avatar">SJ</div>
-                        <div>
-                            <h4 style="font-size: 0.9rem; font-weight: 600;">Sarah Jenkins</h4>
-                            <p style="font-size: 0.8rem; color: var(--text-muted);">Brand Identity Project</p>
+                @forelse($inquiries as $inquiry)
+                    <a href="{{ route('creator.inquiries.show', $inquiry->id) }}" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="inquiry-item" style="transition: background 0.2s;" onmouseover="this.style.background='#F9FAFB';" onmouseout="this.style.background='none';">
+                            <div class="inquiry-client">
+                                <div class="client-avatar">{{ substr($inquiry->client_name, 0, 2) }}</div>
+                                <div>
+                                    <h4 style="font-size: 0.9rem; font-weight: 600;">{{ $inquiry->client_name }}</h4>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted);">{{ $inquiry->subject }}</p>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">{{ $inquiry->created_at->format('M d, Y') }}</div>
+                            @if($inquiry->status === 'new')
+                                <span class="badge badge-new">New Message</span>
+                            @else
+                                <span class="badge badge-ongoing" style="background: #E6FDF5; color: #10B981;">Replied</span>
+                            @endif
                         </div>
+                    </a>
+                @empty
+                    <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                        No active inquiries found.
                     </div>
-                    <div style="font-size: 0.875rem; color: var(--text-muted);">Sep 16, 2026</div>
-                    <span class="badge badge-new">New Message</span>
-                </div>
-                <div class="inquiry-item">
-                    <div class="inquiry-client">
-                        <div class="client-avatar">MT</div>
-                        <div>
-                            <h4 style="font-size: 0.9rem; font-weight: 600;">Mark Thompson</h4>
-                            <p style="font-size: 0.8rem; color: var(--text-muted);">Website Redesign Inquiry</p>
-                        </div>
-                    </div>
-                    <div style="font-size: 0.875rem; color: var(--text-muted);">Sep 15, 2026</div>
-                    <span class="badge badge-ongoing">Awaiting Reply</span>
-                </div>
+                @endforelse
             </div>
             </div>
         </main>
@@ -537,18 +542,17 @@
             
             <div class="right-panel-card">
                 <h3>Portfolio Summary</h3>
-                <div class="balance-amount">12</div>
+                <div class="balance-amount">{{ $projectsCount }}</div>
                 <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Active projects uploaded</p>
-                <button style="width: 100%; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">+ Upload New Work</button>
+                <a href="{{ route('creator.portfolio.index') }}" style="display: block; width: 100%; text-align: center; text-decoration: none; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Manage Work</a>
             </div>
 
             <div class="right-panel-card">
                 <h3>Tagged Skills</h3>
-                <div style="margin-top: 1rem;">
-                    <span class="tag-pill">UI/UX Design</span>
-                    <span class="tag-pill">Webflow</span>
-                    <span class="tag-pill">Branding</span>
-                    <span class="tag-pill">Figma</span>
+                <div style="margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    @foreach($skills as $skill)
+                        <span class="tag-pill" style="margin: 0;">{{ $skill }}</span>
+                    @endforeach
                 </div>
             </div>
 
