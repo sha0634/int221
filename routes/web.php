@@ -22,6 +22,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     
     Route::get('/dashboard', function () {
+        // Suspension Check
+        if (auth()->user()->is_suspended) {
+            auth()->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your account has been suspended by an administrator. Please contact support.'
+            ]);
+        }
+
         $role = auth()->user()->role;
         
         if ($role === 'creator') {
@@ -41,17 +51,28 @@ Route::middleware('auth')->group(function () {
                 $viewsTrend = '↑ ' . $viewsThisWeek;
             }
 
-            // Real Daily Chart
+            // Real Daily Chart (Last 7 Days)
             $viewsByDay = [];
             if ($portfolio) {
                 for ($i = 6; $i >= 0; $i--) {
                     $carbonDate = now()->subDays($i);
                     $dateStr = $carbonDate->format('Y-m-d');
                     $count = $portfolio->views()->whereDate('created_at', $dateStr)->count();
-                    $viewsByDay[] = $count;
+                    $viewsByDay[] = [
+                        'day' => $carbonDate->format('D'),
+                        'count' => $count
+                    ];
                 }
             } else {
-                $viewsByDay = [0, 0, 0, 0, 0, 0, 0];
+                $viewsByDay = [
+                    ['day' => 'Mon', 'count' => 0],
+                    ['day' => 'Tue', 'count' => 0],
+                    ['day' => 'Wed', 'count' => 0],
+                    ['day' => 'Thu', 'count' => 0],
+                    ['day' => 'Fri', 'count' => 0],
+                    ['day' => 'Sat', 'count' => 0],
+                    ['day' => 'Sun', 'count' => 0],
+                ];
             }
 
             // Calculate Profile Strength
@@ -66,6 +87,14 @@ Route::middleware('auth')->group(function () {
 
             $skills = $portfolio && $portfolio->skills ? $portfolio->skills : ['Add Skills'];
             $projectsCount = $portfolio && $portfolio->projects ? count($portfolio->projects) : 0;
+            
+            $searchAppearances = $portfolio ? $portfolio->search_appearances : 0;
+            $inquiriesCount = $portfolio ? $portfolio->inquiries()->count() : 0;
+            $inquiryConversion = $totalViews > 0 ? round(($inquiriesCount / $totalViews) * 100, 1) : 0.0;
+
+            // Query Contracts & Invoices associated with this creator
+            $contracts = $portfolio ? \App\Models\Contract::where('portfolio_id', $portfolio->id)->latest()->get() : collect();
+            $invoices = $portfolio ? \App\Models\Invoice::where('portfolio_id', $portfolio->id)->latest()->get() : collect();
 
             return view('dashboard-creator', compact(
                 'inquiries', 
@@ -75,7 +104,12 @@ Route::middleware('auth')->group(function () {
                 'viewsByDay', 
                 'profileStrength',
                 'skills',
-                'projectsCount'
+                'projectsCount',
+                'searchAppearances',
+                'inquiriesCount',
+                'inquiryConversion',
+                'contracts',
+                'invoices'
             ));
         } elseif ($role === 'client') {
             $email = auth()->user()->email;
@@ -112,6 +146,11 @@ Route::middleware('auth')->group(function () {
                 ->latest()
                 ->get();
 
+            // Increment Search Appearances in database
+            if ($allPortfolios->count() > 0) {
+                \App\Models\Portfolio::whereIn('id', $allPortfolios->pluck('id'))->increment('search_appearances');
+            }
+
             // 4. Fetch Contracts & Invoices (Billing) for this client
             $contracts = \App\Models\Contract::where('client_email', $email)
                 ->with('portfolio')
@@ -135,7 +174,45 @@ Route::middleware('auth')->group(function () {
                 'invoices'
             ));
         } elseif ($role === 'admin') {
-            return view('dashboard-admin');
+            // 1. Users
+            $users = \App\Models\User::latest()->get();
+            $totalUsersCount = $users->count();
+            $creatorsCount = $users->where('role', 'creator')->count();
+            $clientsCount = $users->where('role', 'client')->count();
+            $adminsCount = $users->where('role', 'admin')->count();
+            
+            // 2. Portfolios
+            $portfolios = \App\Models\Portfolio::with('user')->latest()->get();
+            $totalPortfoliosCount = $portfolios->count();
+            $livePortfoliosCount = $portfolios->where('is_live', true)->count();
+            $draftPortfoliosCount = $portfolios->where('is_live', false)->count();
+            
+            // 3. Contracts
+            $contracts = \App\Models\Contract::with('portfolio')->latest()->get();
+            $totalContractsCount = $contracts->count();
+            $totalContractValue = $contracts->sum('amount');
+            $activeContractsValue = $contracts->where('status', 'active')->sum('amount');
+            
+            // 4. Invoices (Billing & Revenue)
+            $invoices = \App\Models\Invoice::with(['portfolio', 'contract'])->latest()->get();
+            $totalInvoicesCount = $invoices->count();
+            $totalRevenue = $invoices->where('status', 'paid')->sum('amount');
+            $outstandingRevenue = $invoices->where('status', 'unpaid')->sum('amount');
+            
+            // 5. Inquiries
+            $inquiries = \App\Models\Inquiry::with('portfolio')->latest()->get();
+            $totalInquiriesCount = $inquiries->count();
+            
+            // 6. Global Traffic (Portfolio Views)
+            $totalViews = \App\Models\PortfolioView::count();
+            
+            return view('dashboard-admin', compact(
+                'users', 'totalUsersCount', 'creatorsCount', 'clientsCount', 'adminsCount',
+                'portfolios', 'totalPortfoliosCount', 'livePortfoliosCount', 'draftPortfoliosCount',
+                'contracts', 'totalContractsCount', 'totalContractValue', 'activeContractsValue',
+                'invoices', 'totalInvoicesCount', 'totalRevenue', 'outstandingRevenue',
+                'inquiries', 'totalInquiriesCount', 'totalViews'
+            ));
         }
         
         // Fallback
@@ -217,6 +294,27 @@ Route::middleware('auth')->group(function () {
         return back()->with('success', 'Contract "' . $contract->title . '" has been signed successfully!');
     })->name('client.contracts.sign');
 
+    // Client Contract Drafting
+    Route::post('/client/contracts/draft', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'portfolio_id' => 'required|exists:portfolios,id',
+            'title' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'required|string',
+        ]);
+        
+        $contract = \App\Models\Contract::create([
+            'client_email' => auth()->user()->email,
+            'portfolio_id' => $request->portfolio_id,
+            'title' => $request->title,
+            'amount' => $request->amount,
+            'description' => $request->description,
+            'status' => 'pending',
+        ]);
+        
+        return back()->with('success', 'Contract "' . $contract->title . '" has been successfully drafted and sent to the creator!');
+    })->name('client.contracts.draft');
+
     // Client Invoice payment
     Route::post('/client/invoices/{invoice}/pay', function ($id) {
         $invoice = \App\Models\Invoice::findOrFail($id);
@@ -253,6 +351,71 @@ Route::middleware('auth')->group(function () {
         
         return back()->with('success', 'Portfolio keywords updated successfully!');
     })->name('creator.portfolio.keywords');
+
+    // Creator Contract signing
+    Route::post('/creator/contracts/{contract}/sign', function ($id) {
+        $contract = \App\Models\Contract::findOrFail($id);
+        $portfolio = auth()->user()->portfolio;
+        if (!$portfolio || $contract->portfolio_id !== $portfolio->id) {
+            abort(403);
+        }
+        
+        $contract->update([
+            'status' => 'active',
+            'signed_at' => now(),
+        ]);
+        
+        return back()->with('success', 'Contract "' . $contract->title . '" has been signed and is now active!');
+    })->name('creator.contracts.sign');
+
+    // Creator Invoice generation
+    Route::post('/creator/invoices/store', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'contract_id' => 'required|exists:contracts,id',
+            'title' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'due_date' => 'required|date',
+        ]);
+        
+        $contract = \App\Models\Contract::findOrFail($request->contract_id);
+        $portfolio = auth()->user()->portfolio;
+        if (!$portfolio || $contract->portfolio_id !== $portfolio->id) {
+            abort(403);
+        }
+        
+        $invoice = \App\Models\Invoice::create([
+            'contract_id' => $contract->id,
+            'client_email' => $contract->client_email,
+            'portfolio_id' => $portfolio->id,
+            'title' => $request->title,
+            'amount' => $request->amount,
+            'due_date' => $request->due_date,
+            'status' => 'unpaid',
+        ]);
+        
+        return back()->with('success', 'Invoice "' . $invoice->title . '" has been successfully generated and sent to the client!');
+    })->name('creator.invoices.store');
+
+    // Admin Toggle Suspension
+    Route::post('/admin/users/{user}/toggle-suspension', function ($id) {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+        
+        $user = \App\Models\User::findOrFail($id);
+        
+        // Prevent admins from suspending themselves
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot suspend your own administrator account!');
+        }
+        
+        $user->update([
+            'is_suspended' => !$user->is_suspended
+        ]);
+        
+        $statusStr = $user->is_suspended ? 'suspended' : 're-activated';
+        return back()->with('success', 'User "' . $user->name . '" has been successfully ' . $statusStr . '!');
+    })->name('admin.users.toggle-suspension');
 });
 
 // Public Portfolio View

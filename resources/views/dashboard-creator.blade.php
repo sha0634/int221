@@ -408,9 +408,13 @@
             </a>
             
             <nav class="nav-links">
-                <a href="#" class="nav-link active">
+                <a href="#" class="nav-link active" id="nav-summary" onclick="switchCreatorTab('summary')">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     Summary
+                </a>
+                <a href="#" class="nav-link" id="nav-contracts" onclick="switchCreatorTab('contracts')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Contracts & Billing
                 </a>
                 <a href="{{ route('creator.analytics') }}" class="nav-link">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
@@ -444,7 +448,15 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="main-content-inner">
+            <!-- Flash success/error alerts -->
+            @if(session('success'))
+                <div style="margin: 2rem 2rem 0; padding: 1rem 1.5rem; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; border-radius: 12px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>✅</span>
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+
+            <div id="tab-content-summary" class="main-content-inner tab-pane">
             <div class="header">
                 <h1>Creator Dashboard</h1>
                 <div class="header-actions">
@@ -462,13 +474,13 @@
                 </div>
                 <div class="stat-card orange">
                     <div class="stat-card-title">Search Appearances</div>
-                    <div class="stat-card-value">{{ number_format($totalViews > 0 ? $totalViews + 12 : 0) }}</div>
+                    <div class="stat-card-value">{{ number_format($searchAppearances) }}</div>
                     <div class="stat-card-trend">↑ 100% active</div>
                     <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
                 <div class="stat-card green">
                     <div class="stat-card-title">Inquiry Conversion</div>
-                    <div class="stat-card-value">{{ $totalViews > 0 ? round(($inquiries->count() / $totalViews) * 100, 1) : 0.0 }}%</div>
+                    <div class="stat-card-value">{{ $inquiryConversion }}%</div>
                     <div class="stat-card-trend">Replies active</div>
                     <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
                 </div>
@@ -480,14 +492,16 @@
                     <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem;">See how your portfolio traffic grows over the week.</p>
                     <div class="analytics-chart-placeholder">
                         @php
-                            $maxVal = max(1, collect($viewsByDay)->max());
+                            $maxVal = max(1, collect($viewsByDay)->pluck('count')->max());
                         @endphp
-                        @foreach($viewsByDay as $val)
-                            <div class="bar" style="height: {{ max(6, round(($val / $maxVal) * 100)) }}%;" title="{{ $val }} views"></div>
+                        @foreach($viewsByDay as $dayData)
+                            <div class="bar" style="height: {{ max(6, round(($dayData['count'] / $maxVal) * 100)) }}%;" title="{{ $dayData['count'] }} views on {{ $dayData['day'] }}"></div>
                         @endforeach
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
-                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        @foreach($viewsByDay as $dayData)
+                            <span style="flex: 1; text-align: center;">{{ $dayData['day'] }}</span>
+                        @endforeach
                     </div>
                 </div>
 
@@ -534,6 +548,143 @@
                 @endforelse
             </div>
             </div>
+            
+            <!-- Contracts Tab Content -->
+            <div id="tab-content-contracts" class="main-content-inner tab-pane" style="display: none;">
+                <div class="header">
+                    <h1>Contracts & Client Billing</h1>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">Review client-drafted agreements, authorize work scopes, and generate milestone invoices.</p>
+                </div>
+
+                <div style="background: white; border-radius: 20px; border: 1px solid #E5E7EB; padding: 2.25rem; margin-top: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <h2 class="section-title" style="margin-top: 0; margin-bottom: 1.25rem;">Active & Pending Agreements</h2>
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        @forelse($contracts as $contract)
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F3F4F6; padding-bottom: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 1.25rem; min-width: 280px; flex: 1;">
+                                    <div style="width: 56px; height: 56px; border-radius: 14px; background: #EEF2F6; color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.5rem; flex-shrink: 0; border: 1.5px solid #E2E8F0;">
+                                        📄
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.25rem;">{{ $contract->title }}</h3>
+                                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; line-height: 1.3;">{{ $contract->description ?? 'No extra scope description provided.' }}</p>
+                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                            <span style="font-size: 0.725rem; background: #DBEAFE; color: #1E40AF; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700;">
+                                                Client: {{ $contract->client_email }}
+                                            </span>
+                                            <span style="font-size: 0.725rem; background: #F3F4F6; color: #374151; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700;">
+                                                Ref ID: #CON-{{ str_pad($contract->id, 4, '0', STR_PAD_LEFT) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Budget -->
+                                <div style="min-width: 140px;">
+                                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.15rem;">Contract Value</div>
+                                    <div style="font-size: 1.25rem; font-weight: 900; color: var(--accent);">${{ number_format($contract->amount, 2) }}</div>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div style="min-width: 130px;">
+                                    @if($contract->status === 'active')
+                                        <span style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; background: #ECFDF5; color: #065F46; padding: 0.35rem 0.75rem; border-radius: 9999px; font-weight: 700; border: 1px solid #A7F3D0;">
+                                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10B981;"></span>
+                                            Signed & Active
+                                        </span>
+                                    @elseif($contract->status === 'pending')
+                                        <span style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; background: #FFFBEB; color: #92400E; padding: 0.35rem 0.75rem; border-radius: 9999px; font-weight: 700; border: 1px solid #FDE68A;">
+                                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #F59E0B;"></span>
+                                            Awaiting Signature
+                                        </span>
+                                    @else
+                                        <span style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; background: #F3F4F6; color: #374151; padding: 0.35rem 0.75rem; border-radius: 9999px; font-weight: 700;">
+                                            {{ ucfirst($contract->status) }}
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <!-- Actions -->
+                                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                    @if($contract->status === 'pending')
+                                        <button class="btn-primary-full" style="width: auto; background: var(--accent); padding: 0.65rem 1.25rem; font-size: 0.85rem; border-radius: 10px; border: none; color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;" onclick="openCreatorSignatureModal({{ $contract->id }}, '{{ addslashes($contract->title) }}', '{{ number_format($contract->amount, 2) }}')">
+                                            Sign Contract 🖋️
+                                        </button>
+                                    @elseif($contract->status === 'active')
+                                        <button class="btn-primary-full" style="width: auto; background: #10B981; padding: 0.65rem 1.25rem; font-size: 0.85rem; border-radius: 10px; border: none; color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;" onclick="openInvoiceGenerationModal({{ $contract->id }}, '{{ addslashes($contract->title) }}')">
+                                            Request Payment 💵
+                                        </button>
+                                    @else
+                                        <button class="icon-btn" style="width: auto; padding: 0.65rem 1rem; font-size: 0.85rem; border-radius: 10px; background: #F9FAFB; border: 1.5px solid #E2E8F0;" onclick="alert('Downloading contract copy...')">
+                                            View Copy
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div style="background: white; border-radius: 16px; border: 1px dashed #D1D5DB; padding: 4rem; text-align: center; color: var(--text-muted); margin: 1rem 0;">
+                                <svg style="width: 56px; height: 56px; margin: 0 auto 1.25rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <p style="font-weight: 700; font-size: 1.1rem; color: var(--text-dark); margin-bottom: 0.35rem;">No Active Agreements</p>
+                                <p style="font-size: 0.9rem;">Once clients draft custom contracts for your portfolio, they will appear here for your signature.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div style="background: white; border-radius: 20px; border: 1px solid #E5E7EB; padding: 2.25rem; margin-top: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <h2 class="section-title" style="margin-top: 0; margin-bottom: 1.25rem;">Milestone Invoice Statements</h2>
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        @forelse($invoices as $invoice)
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F3F4F6; padding-bottom: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 1.25rem; min-width: 260px; flex: 1;">
+                                    <div style="width: 56px; height: 56px; border-radius: 14px; background: #F8FAFC; color: #64748B; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.5rem; flex-shrink: 0; border: 1.5px solid #E2E8F0;">
+                                        💵
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.25rem;">{{ $invoice->title }}</h3>
+                                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; line-height: 1.3;">Milestone Deliverable &bull; Sent to {{ $invoice->client_email }}</p>
+                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                            <span style="font-size: 0.725rem; background: #F1F5F9; color: #475569; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700;">
+                                                Inv ID: #INV-{{ str_pad($invoice->id, 5, '0', STR_PAD_LEFT) }}
+                                            </span>
+                                            @if($invoice->contract)
+                                                <span style="font-size: 0.725rem; background: #EEF2F6; color: var(--accent); padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700;">
+                                                    Contract: #CON-{{ str_pad($invoice->contract->id, 4, '0', STR_PAD_LEFT) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Amount -->
+                                <div style="min-width: 140px;">
+                                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.15rem;">Invoice Amount</div>
+                                    <div style="font-size: 1.25rem; font-weight: 900; color: var(--primary);">${{ number_format($invoice->amount, 2) }}</div>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div style="min-width: 130px;">
+                                    @if($invoice->status === 'paid')
+                                        <span style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; background: #ECFDF5; color: #065F46; padding: 0.35rem 0.75rem; border-radius: 9999px; font-weight: 700; border: 1px solid #A7F3D0;">
+                                            Settled & Paid
+                                        </span>
+                                    @else
+                                        <span style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; background: #FFFBEB; color: #92400E; padding: 0.35rem 0.75rem; border-radius: 9999px; font-weight: 700; border: 1px solid #FDE68A;">
+                                            Awaiting Payment
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div style="background: white; border-radius: 16px; border: 1px dashed #D1D5DB; padding: 4rem; text-align: center; color: var(--text-muted); margin: 1rem 0;">
+                                <svg style="width: 56px; height: 56px; margin: 0 auto 1.25rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                                <p style="font-weight: 700; font-size: 1.1rem; color: var(--text-dark); margin-bottom: 0.35rem;">No Invoices Dispatched</p>
+                                <p style="font-size: 0.9rem;">Once you sign an active contract, you can generate payment requests / invoices for completed milestones here.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- Right Panel (Quick Hub) -->
@@ -575,5 +726,144 @@
             </div>
         </aside>
     </div>
+
+    <!-- Creator Signature Modal -->
+    <div id="creator-signature-modal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 9999; backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 1.5rem;">
+        <div style="background: white; width: 100%; max-width: 520px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); border: 1px solid #E5E7EB; overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #F3F4F6; display: flex; justify-content: space-between; align-items: center; background: #FAFBFC;">
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-dark);">Review & Sign Client Contract</h3>
+                <button onclick="closeCreatorSignatureModal()" style="border: none; background: transparent; font-size: 1.75rem; cursor: pointer; color: var(--text-muted); font-weight: 400; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+            </div>
+            <form id="creator-signature-form" method="POST" style="margin: 0;">
+                @csrf
+                <div style="padding: 1.5rem;">
+                    <div style="margin-bottom: 1.25rem;">
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Agreement Scope Title</span>
+                        <h4 id="cre-contract-title" style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-top: 0.15rem;">UX/UI Design Retainer Contract</h4>
+                    </div>
+                    <div style="margin-bottom: 1.5rem; background: #F8FAFC; border: 1.5px solid #E2E8F0; padding: 1rem; border-radius: 12px;">
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Financial Scope</span>
+                        <div id="cre-contract-amount" style="font-size: 1.5rem; font-weight: 900; color: var(--accent); margin-top: 0.25rem;">$2,500.00 USD</div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.5rem;">Draw or Type Your Professional Signature</label>
+                        <div style="border: 2px dashed #CBD5E1; border-radius: 12px; background: #FAFBFC; padding: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.9rem; font-style: italic; position: relative;">
+                            <input type="text" placeholder="Type name to sign (e.g. {{ Auth::user()->name }})" required style="width: 100%; max-width: 320px; background: white; border: 1.5px solid #CBD5E1; border-radius: 8px; padding: 0.5rem 0.75rem; text-align: center; font-size: 1.1rem; font-family: 'Playfair Display', serif;" />
+                        </div>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.3;">By clicking the button below, you confirm that you accept all scope descriptions, deliverables deadlines, and financial structures defined within this creative agreement.</p>
+                </div>
+                <div style="padding: 1.5rem; border-top: 1px solid #F3F4F6; background: #FAFBFC; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="icon-btn" style="width: auto; background: white; padding: 0.65rem 1rem; border: 1.5px solid #E2E8F0;" onclick="closeCreatorSignatureModal()">Cancel</button>
+                    <button type="submit" class="btn-primary-full" style="width: auto; background: var(--accent); padding: 0.65rem 1.5rem; border: none; color: white; font-weight: 700; cursor: pointer;">Sign Agreement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Generate Milestone Invoice Modal -->
+    <div id="invoice-generation-modal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 9999; backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 1.5rem;">
+        <div style="background: white; width: 100%; max-width: 520px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); border: 1px solid #E5E7EB; overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #F3F4F6; display: flex; justify-content: space-between; align-items: center; background: #FAFBFC;">
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 0.5rem;">
+                    <span>Request Milestone Payment</span>
+                    <span>💵</span>
+                </h3>
+                <button onclick="closeInvoiceGenerationModal()" style="border: none; background: transparent; font-size: 1.75rem; cursor: pointer; color: var(--text-muted); font-weight: 400; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+            </div>
+            <form action="{{ route('creator.invoices.store') }}" method="POST" style="margin: 0;">
+                @csrf
+                <input type="hidden" name="contract_id" id="inv-contract-id" />
+                <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Reference Agreement</span>
+                        <h4 id="inv-contract-title" style="font-size: 1.05rem; font-weight: 700; color: var(--text-dark); margin-top: 0.15rem;">Web Design Retainer</h4>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.35rem;">Milestone Invoice Title</label>
+                        <input type="text" name="title" placeholder="e.g. Milestone 1 - Homepage Concepts Complete" required style="width: 100%; border: 1.5px solid #CBD5E1; border-radius: 10px; padding: 0.65rem 0.85rem; font-size: 0.875rem;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.35rem;">Requested Amount ($ USD)</label>
+                        <input type="number" name="amount" step="0.01" min="0" placeholder="e.g. 1500.00" required style="width: 100%; border: 1.5px solid #CBD5E1; border-radius: 10px; padding: 0.65rem 0.85rem; font-size: 0.875rem;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.35rem;">Milestone Due Date</label>
+                        <input type="date" name="due_date" required style="width: 100%; border: 1.5px solid #CBD5E1; border-radius: 10px; padding: 0.65rem 0.85rem; font-size: 0.875rem;" />
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.35;">Once generated, this milestone invoice will instantly be routed to the client's dashboard where they can pay and settle the balance securely via Stripe.</p>
+                </div>
+                <div style="padding: 1.5rem; border-top: 1px solid #F3F4F6; background: #FAFBFC; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="icon-btn" style="width: auto; background: white; padding: 0.65rem 1rem; border: 1.5px solid #E2E8F0;" onclick="closeInvoiceGenerationModal()">Cancel</button>
+                    <button type="submit" class="btn-primary-full" style="width: auto; background: var(--primary); padding: 0.65rem 1.5rem; border: none; color: white; font-weight: 700; cursor: pointer;">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchCreatorTab(tabName) {
+            // Hide all tab panes
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.style.display = 'none';
+            });
+            
+            // Show target tab pane
+            if (tabName === 'summary') {
+                document.getElementById('tab-content-summary').style.display = 'block';
+            } else if (tabName === 'contracts') {
+                document.getElementById('tab-content-contracts').style.display = 'block';
+            }
+            
+            // Update active sidebar nav styling
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            if (tabName === 'summary') {
+                document.getElementById('nav-summary').classList.add('active');
+            } else if (tabName === 'contracts') {
+                document.getElementById('nav-contracts').classList.add('active');
+            }
+        }
+
+        // Creator Signature Modal Controllers
+        function openCreatorSignatureModal(contractId, title, amount) {
+            document.getElementById('creator-signature-form').action = `/creator/contracts/${contractId}/sign`;
+            document.getElementById('cre-contract-title').innerText = title;
+            document.getElementById('cre-contract-amount').innerText = '$' + amount + ' USD';
+            document.getElementById('creator-signature-modal').style.display = 'flex';
+        }
+        
+        function closeCreatorSignatureModal() {
+            document.getElementById('creator-signature-modal').style.display = 'none';
+        }
+
+        // Invoice Generation Modal Controllers
+        function openInvoiceGenerationModal(contractId, title) {
+            document.getElementById('inv-contract-id').value = contractId;
+            document.getElementById('inv-contract-title').innerText = title;
+            document.getElementById('invoice-generation-modal').style.display = 'flex';
+        }
+
+        function closeInvoiceGenerationModal() {
+            document.getElementById('invoice-generation-modal').style.display = 'none';
+        }
+
+        // Close on click outside
+        document.getElementById('creator-signature-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCreatorSignatureModal();
+            }
+        });
+
+        document.getElementById('invoice-generation-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeInvoiceGenerationModal();
+            }
+        });
+    </script>
+    
+    @include('layouts.chatbot')
 </body>
 </html>

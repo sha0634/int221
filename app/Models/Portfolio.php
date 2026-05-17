@@ -24,6 +24,7 @@ class Portfolio extends Model
         'social_links',
         'slug',
         'is_live',
+        'search_appearances',
     ];
 
     protected $casts = [

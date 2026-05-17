@@ -525,9 +525,14 @@
 
                 <!-- TAB 3: Contracts Directory -->
                 <div id="tab-content-contracts" class="tab-pane" style="display: none;">
-                    <div class="header">
-                        <h1>Client Contracts</h1>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">Manage ongoing project scopes, sign proposals, and track agreements with active creators.</p>
+                    <div class="header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h1>Client Contracts</h1>
+                            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">Manage ongoing project scopes, sign proposals, and track agreements with active creators.</p>
+                        </div>
+                        <button class="btn-primary-full" style="width: auto; background: var(--primary); padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;" onclick="openDraftModal()">
+                            <span>+ Draft Contract</span>
+                        </button>
                     </div>
 
                     <div style="background: white; border-radius: 20px; border: 1px solid #E5E7EB; padding: 2.25rem; margin-top: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
@@ -716,6 +721,10 @@
                                 <span style="position: absolute; left: 1rem; color: var(--text-muted); font-size: 1.1rem; line-height: 1;">🔍</span>
                                 <input type="text" id="discover-search" onkeyup="filterDiscoverNetwork()" placeholder="Search creators by name, bio, role, or skills..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1.5px solid #E5E7EB; border-radius: 12px; font-size: 0.95rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#E5E7EB'" />
                             </div>
+                            <button id="clear-all-filters-btn" onclick="clearAllFilters()" style="background: #FFF5F5; color: #E53E3E; border: 1.5px solid #FED7D7; padding: 0.75rem 1.5rem; border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s;" onmouseover="this.style.background='#FED7D7'" onmouseout="this.style.background='#FFF5F5'">
+                                <span>Clear Filters</span>
+                                <span>🔄</span>
+                            </button>
                         </div>
 
                         <!-- Skill filter pills -->
@@ -891,7 +900,7 @@
                             <p style="font-size: 0.8rem; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.15rem;">{{ $inq->subject }}</p>
                             <p style="font-size: 0.725rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 @if($inq->replies && count($inq->replies) > 0)
-                                    @php $lastReply = end($inq->replies); @endphp
+                                    @php $repliesArr = $inq->replies; $lastReply = end($repliesArr); @endphp
                                     {{ $lastReply['sender'] === 'creator' ? 'Reply: ' : 'You: ' }}{{ $lastReply['message'] }}
                                 @else
                                     You: {{ $inq->message }}
@@ -1049,6 +1058,50 @@
                 <div style="padding: 1.5rem; border-top: 1px solid #F3F4F6; background: #FAFBFC; display: flex; justify-content: flex-end; gap: 0.75rem;">
                     <button type="button" class="icon-btn" style="width: auto; background: white; padding: 0.65rem 1rem; border: 1.5px solid #E2E8F0;" onclick="closeCollaborateModal()">Cancel</button>
                     <button type="submit" class="btn-primary-full" style="width: auto; background: var(--primary); padding: 0.65rem 1.5rem;">Send Inquiry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Client Contract Drafting Modal -->
+    <div id="draft-modal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 9999; backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 1.5rem;">
+        <div style="background: white; width: 100%; max-width: 520px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); border: 1px solid #E5E7EB; overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #F3F4F6; display: flex; justify-content: space-between; align-items: center; background: #FAFBFC;">
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 0.5rem;">
+                    <span>Draft New Agreement</span>
+                    <span>📄</span>
+                </h3>
+                <button onclick="closeDraftModal()" style="border: none; background: transparent; font-size: 1.75rem; cursor: pointer; color: var(--text-muted); font-weight: 400; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+            </div>
+            <form action="{{ route('client.contracts.draft') }}" method="POST" style="margin: 0;">
+                @csrf
+                <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.35rem;">Select Creator / Creative Partner</label>
+                        <select name="portfolio_id" required style="width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #CBD5E1; border-radius: 10px; font-size: 0.9rem; outline: none; background: white;">
+                            <option value="" disabled selected>-- Choose a Creative Partner --</option>
+                            @foreach($allPortfolios as $ap)
+                                <option value="{{ $ap->id }}">{{ $ap->user->name ?? 'Creator' }} - {{ $ap->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.35rem;">Contract Scope / Title</label>
+                        <input type="text" name="title" placeholder="e.g. Brand Guidelines & Web Development Plan" required style="width: 100%; border: 1.5px solid #CBD5E1; border-radius: 10px; padding: 0.65rem 0.85rem; font-size: 0.875rem;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.35rem;">Contract Value / Budget ($ USD)</label>
+                        <input type="number" name="amount" step="0.01" min="0" placeholder="e.g. 5000.00" required style="width: 100%; border: 1.5px solid #CBD5E1; border-radius: 10px; padding: 0.65rem 0.85rem; font-size: 0.875rem;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.35rem;">Detailed Deliverable Scope & Milestones</label>
+                        <textarea name="description" rows="5" placeholder="Specify milestone deliverables, payment timelines, and project revision rules..." required style="width: 100%; border: 1.5px solid #CBD5E1; border-radius: 10px; padding: 0.65rem 0.85rem; font-size: 0.875rem; resize: none; font-family: inherit;"></textarea>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.35;">Once drafted, this contract will be sent directly to the creator's ledger. It will stand in 'Awaiting Signature' status until reviewed and digitally accepted by both parties.</p>
+                </div>
+                <div style="padding: 1.5rem; border-top: 1px solid #F3F4F6; background: #FAFBFC; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="icon-btn" style="width: auto; background: white; padding: 0.65rem 1rem; border: 1.5px solid #E2E8F0;" onclick="closeDraftModal()">Cancel</button>
+                    <button type="submit" class="btn-primary-full" style="width: auto; background: var(--primary); padding: 0.65rem 1.5rem;">Draft Contract</button>
                 </div>
             </form>
         </div>
@@ -1249,6 +1302,44 @@
             filterDiscoverNetwork();
         }
         
+        function clearAllFilters() {
+            // 1. Reset search input
+            document.getElementById('discover-search').value = '';
+            
+            // 2. Reset skill pills (find "All" pill, click it)
+            const allSkillPill = document.querySelector('.skill-filter-pill');
+            if (allSkillPill) {
+                // Find all skill pills, reset style
+                document.querySelectorAll('.skill-filter-pill').forEach(pill => {
+                    pill.classList.remove('active');
+                    pill.style.background = '#F3F4F6';
+                    pill.style.color = '#4B5563';
+                });
+                // Activate first pill
+                allSkillPill.classList.add('active');
+                allSkillPill.style.background = 'var(--primary)';
+                allSkillPill.style.color = 'white';
+            }
+            
+            // 3. Reset keyword pills (find "All Domains" pill, click it)
+            const allKeywordPill = document.querySelector('.keyword-filter-pill');
+            if (allKeywordPill) {
+                // Find all keyword pills, reset style
+                document.querySelectorAll('.keyword-filter-pill').forEach(pill => {
+                    pill.classList.remove('active');
+                    pill.style.background = '#F3F4F6';
+                    pill.style.color = '#4B5563';
+                });
+                // Activate first pill
+                allKeywordPill.classList.add('active');
+                allKeywordPill.style.background = 'var(--accent)';
+                allKeywordPill.style.color = 'white';
+            }
+            
+            // 4. Trigger filter
+            filterDiscoverNetwork();
+        }
+        
         // Modal click-outside triggers
         document.getElementById('signature-modal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -1265,6 +1356,20 @@
                 closeCollaborateModal();
             }
         });
+        document.getElementById('draft-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDraftModal();
+            }
+        });
+
+        function openDraftModal() {
+            document.getElementById('draft-modal').style.display = 'flex';
+        }
+        function closeDraftModal() {
+            document.getElementById('draft-modal').style.display = 'none';
+        }
     </script>
+    
+    @include('layouts.chatbot')
 </body>
 </html>
