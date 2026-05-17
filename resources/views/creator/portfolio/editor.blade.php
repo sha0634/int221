@@ -198,9 +198,9 @@
         <div class="color-circles">
             @php
                 $colors = [
-                    'modern' => ['default' => '#111827', 'blue' => '#2563EB', 'green' => '#059669'],
+                    'modern' => ['default' => '#F592AB', 'blue' => '#7FB3D5', 'green' => '#A0C850'],
                     'minimal' => ['default' => '#000000', 'gray' => '#4B5563', 'sand' => '#D5BDAF'],
-                    'developer' => ['default' => '#1E1E1E', 'dracula' => '#282A36', 'monokai' => '#272822'],
+                    'developer' => ['default' => '#D81B60', 'dracula' => '#D4AF37', 'monokai' => '#8A9A86'],
                     'creative' => ['default' => '#EC4899', 'orange' => '#F97316', 'purple' => '#8B5CF6'],
                     'dark' => ['default' => '#121212', 'neon-green' => '#39FF14', 'neon-blue' => '#00FFFF']
                 ];
@@ -298,6 +298,18 @@
             });
         });
 
+        function setNestedValue(obj, path, value) {
+            const parts = path.split('.');
+            let current = obj;
+            for (let i = 0; i < parts.length - 1; i++) {
+                if (!current[parts[i]]) {
+                    current[parts[i]] = {};
+                }
+                current = current[parts[i]];
+            }
+            current[parts[parts.length - 1]] = value;
+        }
+
         // Setup text edits listeners
         function setupTextEditors() {
             document.querySelectorAll('[data-editable]').forEach(el => {
@@ -307,20 +319,22 @@
                     const field = this.getAttribute('data-editable');
                     const value = this.innerHTML.trim();
                     
-                    if (field === 'title') portfolioState.title = this.innerText;
-                    else if (field === 'bio') portfolioState.bio = this.innerText;
-                    else if (field === 'about_text') portfolioState.innerHTML = value;
-                    else if (field.startsWith('projects.')) {
+                    if (field === 'title') {
+                        portfolioState.title = this.innerText;
+                    } else if (field === 'bio') {
+                        portfolioState.bio = this.innerText;
+                    } else if (field === 'about_text') {
+                        portfolioState.about_text = value;
+                    } else if (field.startsWith('projects.')) {
                         const parts = field.split('.');
                         const index = parseInt(parts[1]);
                         const subField = parts[2];
                         if (portfolioState.projects[index]) {
                             portfolioState.projects[index][subField] = this.innerText;
                         }
-                    } else if (field.startsWith('social_links.')) {
-                        const parts = field.split('.');
-                        const platform = parts[1];
-                        portfolioState.social_links[platform] = this.innerText;
+                    } else {
+                        // Arbitrary nested dot-notated fields (e.g. social_links.custom_texts.my_key)
+                        setNestedValue(portfolioState, field, this.innerText);
                     }
                 });
             });
@@ -337,9 +351,9 @@
                 
                 // Instantly re-apply CSS primary variables based on selected theme color
                 const colorConfig = {
-                    modern: { default: '#111827', blue: '#2563EB', green: '#059669' },
+                    modern: { default: '#F592AB', blue: '#7FB3D5', green: '#A0C850' },
                     minimal: { default: '#000000', gray: '#4B5563', sand: '#D5BDAF' },
-                    developer: { default: '#1E1E1E', dracula: '#282A36', monokai: '#272822' },
+                    developer: { default: '#D81B60', dracula: '#D4AF37', monokai: '#8A9A86' },
                     creative: { default: '#EC4899', orange: '#F97316', purple: '#8B5CF6' },
                     dark: { default: '#121212', 'neon-green': '#39FF14', 'neon-blue': '#00FFFF' }
                 };
@@ -349,6 +363,61 @@
                 
                 document.documentElement.style.setProperty('--primary', hex);
                 document.documentElement.style.setProperty('--accent', hex);
+
+                // Instantly re-bind modern styling variables for immediate visual response
+                if (template === 'modern') {
+                    const doc = document.getElementById('portfolio-container');
+                    doc.style.setProperty('--accent-pink', hex);
+                    
+                    let bgHex = '#FDECE3';
+                    if (themeColor === 'blue') bgHex = '#EAF2F8';
+                    else if (themeColor === 'green') bgHex = '#EAF2EC';
+                    
+                    doc.style.setProperty('--bg-blush', bgHex);
+                    
+                    // Also support global document level elements
+                    document.documentElement.style.setProperty('--accent-pink', hex);
+                    document.documentElement.style.setProperty('--bg-blush', bgHex);
+                }
+
+                // Instantly re-bind minimal styling variables for immediate visual response
+                if (template === 'minimal') {
+                    const doc = document.getElementById('portfolio-container');
+                    let textHex = '#111111';
+                    let sageHex = '#7E8F7A';
+                    
+                    if (themeColor === 'gray') {
+                        textHex = '#374151';
+                        sageHex = '#6B7280';
+                    } else if (themeColor === 'sand') {
+                        textHex = '#2D2522';
+                        sageHex = '#C6AC8F';
+                    }
+                    
+                    doc.style.setProperty('--text-dark', textHex);
+                    doc.style.setProperty('--accent-sage', sageHex);
+                    
+                    // Also support global document level elements
+                    document.documentElement.style.setProperty('--text-dark', textHex);
+                    document.documentElement.style.setProperty('--accent-sage', sageHex);
+                }
+
+                // Instantly re-bind developer styling variables for immediate visual response
+                if (template === 'developer') {
+                    const doc = document.getElementById('portfolio-container');
+                    let accentHex = '#D81B60';
+                    
+                    if (themeColor === 'dracula') {
+                        accentHex = '#D4AF37';
+                    } else if (themeColor === 'monokai') {
+                        accentHex = '#8A9A86';
+                    }
+                    
+                    doc.style.setProperty('--accent-pink', accentHex);
+                    
+                    // Also support global document level elements
+                    document.documentElement.style.setProperty('--accent-pink', accentHex);
+                }
             });
         });
 

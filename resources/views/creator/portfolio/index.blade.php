@@ -160,6 +160,35 @@
                     <button onclick="navigator.clipboard.writeText('{{ url('/portfolio/' . $portfolio->slug) }}'); alert('Portfolio link copied to clipboard!');" style="padding: 0.85rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: background 0.2s;">Copy Link</button>
                 </div>
             </div>
+
+            <!-- Dynamic Template Gallery Switcher -->
+            <div style="margin-top: 3.5rem; border-top: 1px solid #E2E8F0; padding-top: 2.5rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">Switch Design Style / Template</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Want to see your content in a different style? Select another premium layout below to instantly switch themes and pre-populate defaults!</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    @php
+                        $switchTemplates = [
+                            ['id' => 'modern', 'name' => 'Emma Holistic (Design 1)', 'description' => 'Blush-peach warm palette perfect for beauty, food, and wellness.'],
+                            ['id' => 'minimal', 'name' => 'Adam Smith Architect (Design 2)', 'description' => 'Minimalist beige architect layout with structured checkmarks and building grids.'],
+                            ['id' => 'developer', 'name' => 'Mary Dench Boutique (Design 3)', 'description' => 'Dark concrete interior designer boutique with hanging lights and velvet chairs.'],
+                        ];
+                    @endphp
+                    @foreach($switchTemplates as $tmpl)
+                        @if($tmpl['id'] !== $portfolio->template_name)
+                        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s; border-color: #E2E8F0;" onmouseover="this.style.borderColor='var(--accent)';" onmouseout="this.style.borderColor='#E2E8F0';">
+                            <div>
+                                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.25rem;">{{ $tmpl['name'] }}</h4>
+                                <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4; margin-bottom: 1rem;">{{ $tmpl['description'] }}</p>
+                            </div>
+                            <a href="{{ route('creator.portfolio.create', $tmpl['id']) }}" style="display: block; text-align: center; background: #F1F5F9; color: var(--primary); text-decoration: none; padding: 0.5rem; border-radius: 6px; font-weight: 600; font-size: 0.8rem; transition: all 0.2s;" onmouseover="this.style.backgroundColor='var(--accent)'; this.style.color='white';" onmouseout="this.style.backgroundColor='#F1F5F9'; this.style.color='var(--primary)';">
+                                Switch to this Style
+                            </a>
+                        </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
         </div>
     @endif
 @endsection
