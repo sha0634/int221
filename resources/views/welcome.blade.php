@@ -1058,7 +1058,7 @@
 
         <div class="reveal-on-scroll" style="transition-delay: 200ms; width: 100%; margin-top: 3rem;">
             <div class="player fallback" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background-color: transparent; width: 100%; margin: 0;">
-                <iframe title="vimeo-player" src="https://player.vimeo.com/video/1165275255?h=8863e094f0&background=1&autoplay=1&muted=1&loop=1&byline=0&title=0&controls=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+                <iframe title="vimeo-player" data-src="https://player.vimeo.com/video/1165275255?h=8863e094f0&background=1&autoplay=1&muted=1&loop=1&byline=0&title=0&controls=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
             </div>
         </div>
         <div class="templates-header reveal-on-scroll" style="margin-top: 5rem;">
@@ -1262,6 +1262,19 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('is-visible');
+                        
+                        const deferredIframe = entry.target.querySelector('iframe[data-src]');
+                        if (deferredIframe) {
+                            deferredIframe.src = deferredIframe.getAttribute('data-src');
+                            deferredIframe.removeAttribute('data-src');
+                            
+                            // Initialize Vimeo Player and set playback rate
+                            const player = new Vimeo.Player(deferredIframe);
+                            player.setPlaybackRate(0.75).catch(function(error) {
+                                console.warn("Could not set playback rate:", error);
+                            });
+                        }
+
                         observer.unobserve(entry.target);
                     }
                 });
@@ -1271,5 +1284,6 @@
             scrollElements.forEach(el => observer.observe(el));
         });
     </script>
+    <script src="https://player.vimeo.com/api/player.js"></script>
 </body>
 </html>
