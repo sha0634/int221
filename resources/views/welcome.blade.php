@@ -951,7 +951,11 @@
                 </a>
                 <a href="#how-it-works" class="nav-link">How It Works</a>
             </div>
-            <a href="#login" class="btn-login">Login</a>
+            @auth
+                <a href="{{ route('dashboard') }}" class="btn-login">Dashboard</a>
+            @else
+                <a href="{{ route('login') }}" class="btn-login">Login</a>
+            @endauth
         </nav>
     </header>
 
@@ -975,7 +979,7 @@
             <span class="script-text">No design skills, No code.</span>
         </p>
         <div class="animate-fade-in-up delay-200">
-            <a href="#create" class="btn-primary">
+            <a href="{{ route('register') }}" class="btn-primary">
                 Create Your Portfolio
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
             </a>
@@ -1145,7 +1149,7 @@
         <div class="ultimate-cta-content reveal-on-scroll">
             <h2 class="cta-headline-massive">Ready to show up <br><span class="serif-italic">like a pro?</span></h2>
             <p class="cta-subheadline" style="color: #4B5563; font-size: 1.5rem;">Join thousands of top creators and innovators who trust Folio.</p>
-            <a href="#create" class="cta-btn-glow">
+            <a href="{{ route('register') }}" class="cta-btn-glow">
                 Start Building for Free
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
             </a>
